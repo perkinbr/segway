@@ -1,7 +1,7 @@
 # Segway
 This repository will hold code for robots balancing on two wheels, made with various robotics platforms.
 
-This code will eventually supersede all of the programs for balancing robots currently available on [Robotsquare] (http://robotsquare.com). If you're not sure how to use this code, please refer to the existing code and associated tutorials now.
+This code will eventually supersede all of the programs for balancing robots currently available on [Robotsquare] (http://robotsquare.com). If you're not sure how to use this code, please refer to the existing code and associated tutorials for now.
 
 ## Currently available platforms
 
