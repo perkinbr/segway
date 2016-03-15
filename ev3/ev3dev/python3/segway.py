@@ -53,6 +53,13 @@ motorEncoderRight   = open("ev3devices/outD/position", "rb")
 # Open motor files for (fast) writing
 motorDutyCycleLeft = open("ev3devices/outD/duty_cycle_sp", "w")
 motorDutyCycleRight= open("ev3devices/outA/duty_cycle_sp", "w")
+
+# Function to set the duty cycle of the motors
+def SetDuty(motorDutyFileHandle, duty):
+    # Clamp the value between -100 and 100
+    duty = min(max(duty,-100),100)
+    # Apply the signal to the motor
+    FastWrite(motorDutyFileHandle, duty)
         
 # Reset the motors
 with open('ev3devices/outA/command', 'w') as f:
@@ -77,7 +84,7 @@ with open('ev3devices/outD/command', 'w') as f:
 #Timing settings for the program
 loopTimeMiliSec         = 10                    # Time of each loop, measured in miliseconds.
 loopTimeSec             = loopTimeMiliSec/1000  # Time of each loop, measured in seconds.
-motorAngleHistoryLength = 4                     # Number of previous motor angles we keep track of.
+motorAngleHistoryLength = 3                     # Number of previous motor angles we keep track of.
 loopCount               = 0                     # Loop counter, starting at 0
 
 #Math constants
@@ -102,7 +109,7 @@ motorAngleHistory = deque([0],motorAngleHistoryLength)
 gainGyroAngle                  = 1156  # For every radian (57 degrees) we lean forward,            apply this amount of duty cycle.
 gainGyroRate                   = 146   # For every radian/s we fall forward,                       apply this amount of duty cycle.
 gainMotorAngle                 = 7     # For every radian we are ahead of the reference,           apply this amount of duty cycle
-gainMotorAngularSpeed          = 12    # For every radian/s drive faster than the reference value, apply this amount of duty cycle
+gainMotorAngularSpeed          = 9     # For every radian/s drive faster than the reference value, apply this amount of duty cycle
 gainMotorAngleErrorAccumulated = 3     # For every radian x s of accumulated motor angle,          apply this amount of duty cycle
 
 # Variables representing physical signals (more info on these in the docs)
@@ -150,12 +157,12 @@ print("-----------------------------------")
 ########################################################################    
     
 # Initial touch sensor value    
-touchSensorValue = FastRead(touchSensorValueRaw)     
+touchSensorPressed = FastRead(touchSensorValueRaw)     
     
 # Remember start time because we want to set a world record
 tProgramStart = time.clock()    
         
-while(touchSensorValue == 0): 
+while not touchSensorPressed: 
 
     ###############################################################
     ##  Loop info
@@ -192,15 +199,15 @@ while(touchSensorValue == 0):
     motorAngularSpeedReference = speed*radPerSecPerPercentSpeed
     motorAngleReference = motorAngleReference + motorAngularSpeedReference*loopTimeSec
 
-    motorAngleError = motorAngle - motorAngleReference
-    motorAngleHistory.append(motorAngle)
+    motorAngleError = motorAngle - motorAngleReference    
     
     ###############################################################
     ##  Computing Motor Speed
     ###############################################################
-
+    
     motorAngularSpeed = (motorAngle - motorAngleHistory[0])/(motorAngleHistoryLength*loopTimeSec)
     motorAngularSpeedError = motorAngularSpeed - motorAngularSpeedReference;
+    motorAngleHistory.append(motorAngle)
 
     ###############################################################
     ##  Computing the motor duty cycle value
@@ -212,15 +219,12 @@ while(touchSensorValue == 0):
                    + gainMotorAngularSpeed * motorAngularSpeedError
                    + gainMotorAngleErrorAccumulated * motorAngleErrorAccumulated)    
     
-    # Clamp the value between -100 and 100
-    motorDutyCycle = min(max(motorDutyCycle,-100),100)
-    
     ###############################################################
     ##  Apply the signal to the motor, and add steering
     ###############################################################
 
-    FastWrite(motorDutyCycleRight, motorDutyCycle + steering)
-    FastWrite(motorDutyCycleLeft , motorDutyCycle - steering)
+    SetDuty(motorDutyCycleRight, motorDutyCycle + steering)
+    SetDuty(motorDutyCycleLeft , motorDutyCycle - steering)
 
     ###############################################################
     ##  Update angle estimate and Gyro Offset Estimate
@@ -239,7 +243,7 @@ while(touchSensorValue == 0):
     ##  Read the touch sensor (the kill switch)
     ###############################################################
 
-    touchSensorValue = FastRead(touchSensorValueRaw) 
+    touchSensorPressed = FastRead(touchSensorValueRaw) 
 
     ###############################################################
     ##  Busy wait for the loop to complete
@@ -269,3 +273,4 @@ print("Loop time:", tLoop*1000,"ms")
 print("-----------------------------------")   
 print("STOP")
 print("-----------------------------------")      
+
