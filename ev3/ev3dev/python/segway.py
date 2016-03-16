@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 
+from __future__ import division
 import subprocess
 import time
 import math
 from collections import deque
+
 
 ########################################################################
 ##
@@ -273,4 +275,3 @@ print("Loop time:", tLoop*1000,"ms")
 print("-----------------------------------")   
 print("STOP")
 print("-----------------------------------")      
-

@@ -6,6 +6,9 @@ __pycache__/
 # tmp files
 *~
 
+#Sensor and motor symlinks
+ev3/ev3dev/python/ev3devices
+
 # C extensions
 *.so
 
