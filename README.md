@@ -5,7 +5,7 @@ This code will eventually supersede all of the programs for balancing robots cur
 
 ## Currently available platforms
 
-LEGO MINDSTORMS EV3 (ev3dev/Python):
+LEGO MINDSTORMS EV3 (ev3dev with Python 2 and 3):
 
 - [Building instructions] (http://robotsquare.com/2014/06/23/tutorial-building-balanc3r/)
 - Add a Touch Sensor to Port 1. I added it just like the Gyro, but on the other side of the brick. This will be the program's safe stop button.
