@@ -50,7 +50,7 @@ with open('ev3devices/in2/mode', 'w') as f:
 
 # Open sensor files for (fast) reading
 motorEncoderLeft    = open("ev3devices/outD/position", "rb")    
-motorEncoderRight   = open("ev3devices/outD/position", "rb")        
+motorEncoderRight   = open("ev3devices/outA/position", "rb")        
 
 # Open motor files for (fast) writing
 motorDutyCycleLeft = open("ev3devices/outD/duty_cycle_sp", "w")
