@@ -5,15 +5,18 @@ This code will eventually supersede all of the programs for balancing robots cur
 
 ## Currently available platforms
 
-LEGO MINDSTORMS EV3 (ev3dev with Python 2 and 3):
+- LEGO MINDSTORMS EV3 (ev3dev/Python):
+  - [Building instructions] (http://robotsquare.com/2014/06/23/tutorial-building-balanc3r/)
+  - Add a Touch Sensor to Port 1. I added it just like the Gyro, but on the other side of the brick. This will be the program's safe stop button.
+  - Instructions on how to run this program will come soon. (In short, hold segway up right with its resting wheels on the ground and just launch the python program.)
 
-- [Building instructions] (http://robotsquare.com/2014/06/23/tutorial-building-balanc3r/)
-- Add a Touch Sensor to Port 1. I added it just like the Gyro, but on the other side of the brick. This will be the program's safe stop button.
-
+- VEX IQ (RobotC):
+  - [Building instructions] (http://robotsquare.com/2016/04/06/segway-iq/)
+  - [Video] (https://www.youtube.com/watch?v=1P7SWxnKF_A)
+  - Instructions for running this program are included in the code.
 
 ## Work in progress
 
-- VEX IQ (RobotC): Completed, to be released soon
 - LEGO MINDSTORMS EV3 (EV3-G):  Currently available in legacy segway code
 - LEGO MINDSTORMS EV3 (RobotC): Awaiting some gyro issues with RobotC
 - LEGO MINDSTORMS NXT (RobotC): Currently available in legacy segway code
