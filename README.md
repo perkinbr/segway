@@ -11,7 +11,7 @@ This code will eventually supersede all of the programs for balancing robots cur
   - Instructions on how to run this program will come soon. (In short, hold segway up right with its resting wheels on the ground and just launch the python program.)
 
 - VEX IQ (RobotC):
-  - [Building instructions] (http://robotsquare.com/2016/04/06/segway-iq/)
+  - [Building instructions] (http://robotsquare.com/2016/04/06/tutorial-segway-iq/)
   - [Video] (https://www.youtube.com/watch?v=1P7SWxnKF_A)
   - Instructions for running this program are included in the code.
 
