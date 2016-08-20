@@ -53,25 +53,25 @@ task main()
   const int loopTimeMiliSec = 20,        // Time of each loop, measured in miliseconds.
             motorAngleHistoryLength = 4; // Number of previous motor angles we keep track of.
 
-  const float loopTimeSec = loopTimeMiliSec/1000.0,            // Time of each loop, measured in seconds.
-              radiansPerDegree = PI/180.0,                     // The number of radians in a degree.
-              radiansPerSecondPerRawGyroUnit = 1,              // For the VEX IQ, 1 unit = 1 rad/s
-              radiansPerRawMotorUnit = radiansPerDegree,       // For the VEX UQ, 1 unit = 1 deg
-              gyroDriftCompensationRate = 0.1*loopTimeSec,     // The rate at which we'll update the gyro offset
-              degPerSecPerPercentSpeed = 7.1,                  // On the VEX IQ, "1% speed" corresponds to 7.1 deg/s (if speed control were enabled)
+  const float loopTimeSec = loopTimeMiliSec/1000.0,              // Time of each loop, measured in seconds.
+              radiansPerDegree = PI/180.0,                       // The number of radians in a degree.
+              radiansPerSecondPerRawGyroUnit = radiansPerDegree, // For the VEX IQ, 1 unit = 1 deg/s
+              radiansPerRawMotorUnit = radiansPerDegree,         // For the VEX UQ, 1 unit = 1 deg
+              gyroDriftCompensationRate = 0.1*loopTimeSec,       // The rate at which we'll update the gyro offset
+              degPerSecPerPercentSpeed = 7.1,                    // On the VEX IQ, "1% speed" corresponds to 7.1 deg/s (if speed control were enabled)
               radPerSecPerPercentSpeed = degPerSecPerPercentSpeed * radiansPerDegree; //Convert this number to the speed in rad/s per "percent speed"
 
-  //A (fifo) which we'll use to keep track of previous motor positions, which we can use to calculate the rate of change (speed)
+  //A (fifo) array which we'll use to keep track of previous motor positions, which we can use to calculate the rate of change (speed)
 
   float motorAngleHistory[motorAngleHistoryLength];
   memset(motorAngleHistory,0,4*motorAngleHistoryLength);
   int motorAngleIndex = 0;
 
-  const float gainGyroAngle                  = 1000, //For every radian (57 degrees) we lean forward,            apply this amount of duty cycle.
-              gainGyroRate                   = 40,   //For every radian/s we fall forward,                       apply this amount of duty cycle.
-              gainMotorAngle                 = 15,   //For every radian we are ahead of the reference,           apply this amount of duty cycle
-              gainMotorAngularSpeed          = 9.6,   //For every radian/s drive faster than the reference value, apply this amount of duty cycle
-              gainMotorAngleErrorAccumulated = 3;    //For every radian x s of accumulated motor angle,          apply this amount of duty cycle
+  const float gainGyroAngle                  = 900, //For every radian (57 degrees) we lean forward,            apply this amount of duty cycle.
+              gainGyroRate                   = 36,  //For every radian/s we fall forward,                       apply this amount of duty cycle.
+              gainMotorAngle                 = 15,  //For every radian we are ahead of the reference,           apply this amount of duty cycle
+              gainMotorAngularSpeed          = 9.6, //For every radian/s drive faster than the reference value, apply this amount of duty cycle
+              gainMotorAngleErrorAccumulated = 3;   //For every radian x s of accumulated motor angle,          apply this amount of duty cycle
 
    // Variables to control the reference speed and steering
    float speed    = 0,
