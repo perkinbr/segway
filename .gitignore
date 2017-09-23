@@ -8,6 +8,7 @@ __pycache__/
 
 #Sensor and motor symlinks
 ev3/ev3dev/python/ev3devices
+ev3/ev3dev/testing
 
 # C extensions
 *.so

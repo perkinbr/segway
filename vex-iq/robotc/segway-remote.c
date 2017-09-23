@@ -28,7 +28,7 @@
 
 task main()
 {
-  // Initializing ystem state variables
+  // Initializing system state variables
   float motorAngleRaw,                      // The angle of the "motor", measured in degrees. We will take the average of both motor positions, wich is essentially how far the middle of the robot has traveled.
         motorAngle,                         // The angle of the motor, converted to radians (2*pi radians equals 360 degrees).
         motorAngleReference = 0,            // The reference angle of the motor. The robot will attempt to drive forward or backward, such that its measured position equals this reference (or close enough).
@@ -66,7 +66,7 @@ task main()
   const float loopTimeSec = loopTimeMiliSec/1000.0,              // Time of each loop, measured in seconds.
               radiansPerDegree = PI/180.0,                       // The number of radians in a degree.
               radiansPerSecondPerRawGyroUnit = radiansPerDegree, // For the VEX IQ, 1 unit = 1 deg/s
-              radiansPerRawMotorUnit = radiansPerDegree,         // For the VEX UQ, 1 unit = 1 deg
+              radiansPerRawMotorUnit = radiansPerDegree,         // For the VEX IQ, 1 unit = 1 deg
               gyroDriftCompensationRate = 0.1*loopTimeSec,       // The rate at which we'll update the gyro offset
               degPerSecPerPercentSpeed = 7.1,                    // On the VEX IQ, "1% speed" corresponds to 7.1 deg/s (if speed control were enabled)
               radPerSecPerPercentSpeed = degPerSecPerPercentSpeed * radiansPerDegree; //Convert this number to the speed in rad/s per "percent speed"
