@@ -31,6 +31,18 @@ def eprint(*args, **kwargs):
 ##
 ########################################################################
 
+#ev3dev.core.PowerSupply
+powerSupply = ev3.PowerSupply()
+voltageIdle = powerSupply.measured_volts
+voltageNominal = 8
+voltageCompensation = voltageNominal/voltageIdle
+
+# Offset to limit friction deadlock
+frictionOffsetNominal = 15
+frictionOffset = int(round(frictionOffsetNominal*voltageCompensation))
+
+
+
 # Gyro Sensor setup
 gyroSensor          = ev3.GyroSensor()
 gyroSensor.mode     = gyroSensor.MODE_GYRO_RATE
@@ -62,20 +74,26 @@ motorDutyCycleRight= open(motorRight._path + "/duty_cycle_sp", "w")
 
 # Function to set the duty cycle of the motors
 def SetDuty(motorDutyFileHandle, duty):
-    # Clamp the value between -100 and 100
-    duty = min(max(duty,-100),100)
+    # Round the input
+    dutyInt = int(round(duty*voltageCompensation))
+
+    # Add or subtract offset and clamp the value between -100 and 100
+    if dutyInt > 0:
+        dutyInt = min(100, dutyInt + frictionOffset)
+    elif dutyInt < 0:
+        dutyInt = max(-100, dutyInt - frictionOffset)
+
     # Apply the signal to the motor
-    FastWrite(motorDutyFileHandle, duty)
+    FastWrite(motorDutyFileHandle, dutyInt)
         
 ########################################################################
 ##
 ## Definitions and Initialization variables
 ##
 ########################################################################    
-                
-           
+                       
 #Timing settings for the program
-loopTimeMiliSec         = 20                    # Time of each loop, measured in miliseconds.
+loopTimeMiliSec         = 10                    # Time of each loop, measured in miliseconds.
 loopTimeSec             = loopTimeMiliSec/1000  # Time of each loop, measured in seconds.
 motorAngleHistoryLength = 3                     # Number of previous motor angles we keep track of.
 loopCount               = 0                     # Loop counter, starting at 0
