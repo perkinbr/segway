@@ -1,11 +1,8 @@
 #!/usr/bin/env python3
-
-from __future__ import division
-import subprocess
 import time
-import math
+import sys
 from collections import deque
-
+import ev3dev.ev3 as ev3
 
 ########################################################################
 ##
@@ -16,8 +13,7 @@ from collections import deque
 # Function for fast reading from sensor files
 def FastRead(infile):
     infile.seek(0)    
-    value = int(infile.read().decode().strip())
-    return(value)
+    return(int(infile.read().decode().strip()))
 
 # Function for fast writing to motor files    
 def FastWrite(outfile,value):
@@ -25,36 +21,44 @@ def FastWrite(outfile,value):
     outfile.write(str(int(value)))
     outfile.flush()    
 
+# Debug print (https://stackoverflow.com/a/14981125)
+def eprint(*args, **kwargs):
+    print(*args, file=sys.stderr, **kwargs)
+
 ########################################################################
 ##
-## Sensor Setup
+## Hardware Setup (Updated to work with ev3dev library as inspired by @dwalton76)
 ##
 ########################################################################
 
-# Make symlinks to sensors and motor for easy access from this python program
-subprocess.call(['./makelinks.sh'])
-    
+# Gyro Sensor setup
+gyroSensor          = ev3.GyroSensor()
+gyroSensor.mode     = gyroSensor.MODE_GYRO_RATE
+gyroSensorValueRaw  = open(gyroSensor._path + "/value0", "rb")   
+
+# Touch Sensor setup
+touchSensor         = ev3.TouchSensor()
+touchSensorValueRaw = open(touchSensor._path + "/value0", "rb")
+
+# IR Buttons setup
+# irRemote = ev3.RemoteControl(channel=1)
+# irRemoteValueRaw = open(irRemote._path + "/value0", "rb")
+
+# Configure the motors
+motorLeft  = ev3.LargeMotor('outD') # Open the port
+motorRight = ev3.LargeMotor('outB')
+motorLeft.reset()                   # Reset the encoder
+motorRight.reset()
+motorLeft.run_direct()              # Set to run direct mode
+motorRight.run_direct() 
+
 # Open sensor files for (fast) reading
-touchSensorValueRaw = open("ev3devices/in1/value0", "rb")
-gyroSensorValueRaw  = open("ev3devices/in2/value0", "rb")   
-
-# Set gyro to rate mode
-with open('ev3devices/in2/mode', 'w') as f:
-    f.write('GYRO-RATE')   
-
-########################################################################
-##
-## Motor Setup
-##
-########################################################################
-
-# Open sensor files for (fast) reading
-motorEncoderLeft    = open("ev3devices/outD/position", "rb")    
-motorEncoderRight   = open("ev3devices/outA/position", "rb")        
+motorEncoderLeft    = open(motorLeft._path + "/position", "rb")    
+motorEncoderRight   = open(motorRight._path + "/position", "rb")           
 
 # Open motor files for (fast) writing
-motorDutyCycleLeft = open("ev3devices/outD/duty_cycle_sp", "w")
-motorDutyCycleRight= open("ev3devices/outA/duty_cycle_sp", "w")
+motorDutyCycleLeft = open(motorLeft._path + "/duty_cycle_sp", "w")
+motorDutyCycleRight= open(motorRight._path + "/duty_cycle_sp", "w")
 
 # Function to set the duty cycle of the motors
 def SetDuty(motorDutyFileHandle, duty):
@@ -62,19 +66,6 @@ def SetDuty(motorDutyFileHandle, duty):
     duty = min(max(duty,-100),100)
     # Apply the signal to the motor
     FastWrite(motorDutyFileHandle, duty)
-        
-# Reset the motors
-with open('ev3devices/outA/command', 'w') as f:
-    f.write('reset')
-with open('ev3devices/outD/command', 'w') as f:
-    f.write('reset')     
-time.sleep(0.01)   
-
-# Set motors in run-direct mode
-with open('ev3devices/outA/command', 'w') as f:  
-    f.write('run-direct')        
-with open('ev3devices/outD/command', 'w') as f:
-    f.write('run-direct')    
         
 ########################################################################
 ##
@@ -84,13 +75,13 @@ with open('ev3devices/outD/command', 'w') as f:
                 
            
 #Timing settings for the program
-loopTimeMiliSec         = 10                    # Time of each loop, measured in miliseconds.
+loopTimeMiliSec         = 20                    # Time of each loop, measured in miliseconds.
 loopTimeSec             = loopTimeMiliSec/1000  # Time of each loop, measured in seconds.
 motorAngleHistoryLength = 3                     # Number of previous motor angles we keep track of.
 loopCount               = 0                     # Loop counter, starting at 0
 
 #Math constants
-radiansPerDegree               = math.pi/180                                   # The number of radians in a degree.
+radiansPerDegree               = 3.14159/180                                   # The number of radians in a degree.
 
 #Platform specific constants and conversions
 degPerSecondPerRawGyroUnit     = 1                                             # For the LEGO EV3 Gyro in Rate mode, 1 unit = 1 deg/s
@@ -136,8 +127,8 @@ gyroOffset                 = 0 # Over time, the gyro rate value can drift. This 
 ##
 ########################################################################    
       
-print("-----------------------------------")      
-print("Calibrating...")
+eprint("-----------------------------------")      
+eprint("Calibrating...")
 
 #As you hold the robot still, determine the average sensor value of 100 samples
 gyroRateCalibrateCount = 100
@@ -147,10 +138,10 @@ for i in range(gyroRateCalibrateCount):
 gyroOffset = gyroOffset/gyroRateCalibrateCount 
        
 # Print the result   
-print("GyroOffset: ",gyroOffset)   
-print("-----------------------------------")    
-print("GO!") 
-print("-----------------------------------") 
+eprint("GyroOffset: ",gyroOffset)   
+eprint("-----------------------------------")    
+eprint("GO!") 
+eprint("-----------------------------------") 
 
 ########################################################################
 ##
@@ -269,9 +260,9 @@ FastWrite(motorDutyCycleRight,0)
 
 # Calculate loop time
 tLoop = (tProgramEnd - tProgramStart)/loopCount
-print("Loop time:", tLoop*1000,"ms")
+eprint("Loop time:", tLoop*1000,"ms")
 
 # Print a stop message
-print("-----------------------------------")   
-print("STOP")
-print("-----------------------------------")      
+eprint("-----------------------------------")   
+eprint("STOP")
+eprint("-----------------------------------")     
