@@ -3,6 +3,8 @@ import time
 import sys
 from collections import deque
 import ev3dev.ev3 as ev3
+import parameters
+import importlib
 
 ########################################################################
 ## File I/O functions
@@ -41,9 +43,6 @@ def SetDuty(motorDutyFileHandle, duty):
 ## One-time Hardware setup
 ########################################################################
 
-voltageNominal = 8
-frictionOffsetNominal = 15
-
 # EV3 Brick
 powerSupply = ev3.PowerSupply()
 # buttons = ev3.Button()
@@ -75,15 +74,6 @@ while True:
     ## Hardware (Re-)Config
     ########################################################################
 
-    # Read the parameters
-
-    # Read battery voltage
-    voltageIdle = powerSupply.measured_volts
-    voltageCompensation = voltageNominal/voltageIdle
-
-    # Offset to limit friction deadlock
-    frictionOffset = int(round(frictionOffsetNominal*voltageCompensation))
-
     # Reset the motors
     motorLeft.reset()                   # Reset the encoder
     motorRight.reset()
@@ -97,18 +87,11 @@ while True:
     # Open motor files for (fast) writing
     motorDutyCycleLeft = open(motorLeft._path + "/duty_cycle_sp", "w")
     motorDutyCycleRight= open(motorRight._path + "/duty_cycle_sp", "w")
-
      
     ########################################################################
     ## Definitions and Initialization variables
     ########################################################################    
                         
-    #Timing settings for the program
-    loopTimeMiliSec         = 15                    # Time of each loop, measured in miliseconds.
-    loopTimeSec             = loopTimeMiliSec/1000  # Time of each loop, measured in seconds.
-    motorAngleHistoryLength = 3                     # Number of previous motor angles we keep track of.
-    loopCount               = 0                     # Loop counter, starting at 0
-
     #Math constants
     radiansPerDegree               = 3.14159/180                                   # The number of radians in a degree.
 
@@ -120,19 +103,6 @@ while True:
     RPMperPerPercentSpeed          = 1.7                                           # On the EV3, "1% speed" corresponds to 1.7 RPM (if speed control were enabled)
     degPerSecPerPercentSpeed       = RPMperPerPercentSpeed*360/60                  # Convert this number to the speed in deg/s per "percent speed"
     radPerSecPerPercentSpeed       = degPerSecPerPercentSpeed * radiansPerDegree   # Convert this number to the speed in rad/s per "percent speed"
-
-    # The rate at which we'll update the gyro offset (precise definition given in docs)
-    gyroDriftCompensationRate      = 0.1*loopTimeSec*radiansPerSecondPerRawGyroUnit
-
-    # A deque (a fifo array) which we'll use to keep track of previous motor positions, which we can use to calculate the rate of change (speed)
-    motorAngleHistory = deque([0],motorAngleHistoryLength)
-
-    # State feedback control gains (aka the magic numbers)
-    gainGyroAngle                  = 1156  # For every radian (57 degrees) we lean forward,            apply this amount of duty cycle.
-    gainGyroRate                   = 146   # For every radian/s we fall forward,                       apply this amount of duty cycle.
-    gainMotorAngle                 = 7     # For every radian we are ahead of the reference,           apply this amount of duty cycle
-    gainMotorAngularSpeed          = 9     # For every radian/s drive faster than the reference value, apply this amount of duty cycle
-    gainMotorAngleErrorAccumulated = 3     # For every radian x s of accumulated motor angle,          apply this amount of duty cycle
 
     # Variables representing physical signals (more info on these in the docs)
     motorAngleRaw              = 0 # The angle of "the motor", measured in raw units (degrees for the EV3). We will take the average of both motor positions as "the motor" angle, wich is essentially how far the middle of the robot has traveled.
@@ -149,7 +119,7 @@ while True:
     gyroEstimatedAngle         = 0 # The gyro doesn't measure the angle of the robot, but we can estimate this angle by keeping track of the gyroRate value in time
     gyroOffset                 = 0 # Over time, the gyro rate value can drift. This causes the sensor to think it is moving even when it is perfectly still. We keep track of this offset.
 
-    eprint("Touch to start or button to exit")
+    eprint("Hold robot upright. Press Touch Sensor to start. Or any button to exit.")
 
     # Buttons currently broken in ev3dev  
 
@@ -164,7 +134,36 @@ while True:
     # Otherwise, if it was the Touch Sensor, wait for release and proceed to calibration and balancing     
     while touchSensor.is_pressed:
         time.sleep(0.01)
-        
+    
+    ########################################################################
+    ## Read/reload Parameters
+    ########################################################################    
+
+    # Reload parameters class
+    importlib.reload(parameters)
+
+    powerParameters = parameters.Power()
+    gains           = parameters.Gains()
+    timing          = parameters.Timing()
+
+    # Read battery voltage
+    voltageIdle = powerSupply.measured_volts
+    voltageCompensation = powerParameters.voltageNominal/voltageIdle
+
+    # Offset to limit friction deadlock
+    frictionOffset = int(round(powerParameters.frictionOffsetNominal*voltageCompensation))
+
+    #Timing settings for the program
+    loopTimeSec             = timing.loopTimeMiliSec/1000  # Time of each loop, measured in seconds.
+    loopCount               = 0                     # Loop counter, starting at 0
+
+    # A deque (a fifo array) which we'll use to keep track of previous motor positions, which we can use to calculate the rate of change (speed)
+    motorAngleHistory = deque([0],timing.motorAngleHistoryLength)
+
+    # The rate at which we'll update the gyro offset (precise definition given in docs)
+    gyroDriftCompensationRate      = timing.gyroDriftCompensationFactor*loopTimeSec*radiansPerSecondPerRawGyroUnit
+
+
     ########################################################################
     ## Calibrate Gyro
     ########################################################################    
@@ -239,19 +238,19 @@ while True:
         ##  Computing Motor Speed
         ###############################################################
         
-        motorAngularSpeed = (motorAngle - motorAngleHistory[0])/(motorAngleHistoryLength*loopTimeSec)
-        motorAngularSpeedError = motorAngularSpeed - motorAngularSpeedReference;
+        motorAngularSpeed = (motorAngle - motorAngleHistory[0])/(timing.motorAngleHistoryLength*loopTimeSec)
+        motorAngularSpeedError = motorAngularSpeed - motorAngularSpeedReference
         motorAngleHistory.append(motorAngle)
 
         ###############################################################
         ##  Computing the motor duty cycle value
         ###############################################################
 
-        motorDutyCycle =(gainGyroAngle  * gyroEstimatedAngle
-                    + gainGyroRate   * gyroRate
-                    + gainMotorAngle * motorAngleError
-                    + gainMotorAngularSpeed * motorAngularSpeedError
-                    + gainMotorAngleErrorAccumulated * motorAngleErrorAccumulated)    
+        motorDutyCycle =( gains.GyroAngle  * gyroEstimatedAngle
+                        + gains.GyroRate   * gyroRate
+                        + gains.MotorAngle * motorAngleError
+                        + gains.MotorAngularSpeed * motorAngularSpeedError
+                        + gains.MotorAngleErrorAccumulated * motorAngleErrorAccumulated)    
         
         ###############################################################
         ##  Apply the signal to the motor, and add steering
