@@ -9,11 +9,11 @@ This code will eventually supersede all of the programs for balancing robots cur
   - [Building instructions] (http://robotsquare.com/2014/06/23/tutorial-building-balanc3r/)
   - Add a Touch Sensor to Port 1. I added it just like the Gyro, but on the other side of the brick. This will be the program's safe stop button.
   - Run the program like any other ev3dev Python program
-     - Transfer and "segway.py" and "parameters.py" to your EV3, and put them in the same directory.
+     - Transfer and [segway.py](https://github.com/laurensvalk/segway/raw/master/ev3/ev3dev/python/segway.py) and [parameters.py](https://github.com/laurensvalk/segway/raw/master/ev3/ev3dev/python/parameters.py) to your EV3, and put them in the same directory.
      - To turn them into executable scripts, run:
-        - chmod +x parameters.py
+        - chmod +x segway.py
      - Now you can run the program: ./segway.py   
-     - Or, use the VS Code IDE for convenience.
+     - Or, use the [VS Code IDE](https://github.com/ev3dev/vscode-ev3dev-browser) for convenience.
      - Wait until you see something on the display/command line
      - Hold segway up right with its resting wheels on the ground and press the Touch Sensor
      - Press the Touch Sensor again to stop. Then again to restart, if you like.
