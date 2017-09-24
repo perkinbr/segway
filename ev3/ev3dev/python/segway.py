@@ -57,8 +57,11 @@ touchSensor         = ev3.TouchSensor()
 touchSensorValueRaw = open(touchSensor._path + "/value0", "rb")
 
 # IR Buttons setup
-irRemote    = ev3.RemoteControl(channel=1)
-# irRemoteValueRaw = open(irRemote._path + "/value0", "rb")
+# irRemote            = ev3.RemoteControl(channel=1)
+# irRemoteValueRaw    = open(irRemote._path + "/value0", "rb")
+irRemote          = ev3.InfraredSensor()
+irRemote.mode     = irRemote.MODE_IR_REMOTE
+irRemoteValueRaw  = open(irRemote._path + "/value0", "rb") 
 
 # Configure the motors
 motorLeft  = ev3.LargeMotor('outD')
@@ -208,13 +211,36 @@ while True:
         ##  Driving and Steering. Modify this section as you like to
         ##  make your segway go anywhere!
         ##
+        ##  To begin, uncomment one of the examples below, and modify 
+        ##  from there
+        ##
         ###############################################################
     
-        # Read e.g. your PS2 controller here. Be sure you don't drag the loop too long
-        
-        # Or just balance in place:
+        # Example 1: Doing nothing: just balance in place:
         speed    = 0 
         steering = 0
+
+        # Example 2: Control speed and steering based on the IR Remote
+        buttonCode = FastRead(irRemoteValueRaw)
+
+        speed_max = 20
+        steer_max_right = 8
+
+        if(buttonCode == 5):
+            speed    =  speed_max
+            steering =  0
+        elif (buttonCode == 6):
+            speed    =  0
+            steering =  steer_max_right
+        elif (buttonCode == 7):
+            speed    =  0
+            steering = -steer_max_right            
+        elif (buttonCode == 8):
+            speed    = -speed_max
+            steering = 0
+        else:
+            speed    = 0
+            steering = 0
 
         ###############################################################
         ##  Reading the Gyro.
