@@ -8,13 +8,15 @@ This code will eventually supersede all of the programs for balancing robots cur
 - LEGO MINDSTORMS EV3 (ev3dev/Python):
   - [Building instructions] (http://robotsquare.com/2014/06/23/tutorial-building-balanc3r/)
   - Add a Touch Sensor to Port 1. I added it just like the Gyro, but on the other side of the brick. This will be the program's safe stop button.
-  - Instructions on how to run this program will come later. For now, here are some very rough steps, assuming you already know roughly how to use ev3dev and transfer files to the brick:
-     - Transfer "makelinks.sh" and "segway.py" to your EV3, and put them in the same directory.
+  - Run the program like any other ev3dev Python program
+     - Transfer and "segway.py" and "parameters.py" to your EV3, and put them in the same directory.
      - To turn them into executable scripts, run:
-        - chmod +x makelinks.sh
-        - chmod +x segway.py
+        - chmod +x parameters.py
      - Now you can run the program: ./segway.py   
-     - hold segway up right with its resting wheels on the ground and just launch the python program.)
+     - Or, use the VS Code IDE for convenience.
+     - Wait until you see something on the display/command line
+     - Hold segway up right with its resting wheels on the ground and press the Touch Sensor
+     - Press the Touch Sensor again to stop. Then again to restart, if you like.
 
 - VEX IQ (RobotC):
   - [Building instructions] (http://robotsquare.com/2016/04/06/tutorial-segway-iq/)
