@@ -1,3 +1,7 @@
+# Note
+This is a fork of Laurens' python code.
+It currently uses the Hitechnics gyro, which you need to configure manually to be ht-nxt-gyro in the device browser.  
+
 # Segway
 This repository will hold code for robots balancing on two wheels, made with various robotics platforms.
 

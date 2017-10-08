@@ -48,8 +48,12 @@ powerSupply = ev3.PowerSupply()
 # buttons = ev3.Button()
 
 # Gyro Sensor setup
-gyroSensor          = ev3.GyroSensor()
-gyroSensor.mode     = gyroSensor.MODE_GYRO_RATE
+#Uncomment the next two lines  and comment the ht-nxt-gyro line for lego gyro:
+#gyroSensor          = ev3.GyroSensor()
+#gyroSensor.mode     = gyroSensor.MODE_GYRO_RATE
+#You must manually set the port to ht-nxt-gyro in the device browser
+gyroSensor = ev3.Sensor(driver_name='ht-nxt-gyro')
+
 gyroSensorValueRaw  = open(gyroSensor._path + "/value0", "rb")   
 
 # Touch Sensor setup
@@ -192,7 +196,7 @@ while True:
     ########################################################################    
 
     # Remember start time
-    tProgramStart = time.clock()
+    tProgramStart = time.time()
 
     # Initial fast read touch sensor value    
     touchSensorPressed = False 
@@ -204,7 +208,7 @@ while True:
         ##  Loop info
         ###############################################################
         loopCount = loopCount + 1
-        tLoopStart = time.clock()  
+        tLoopStart = time.time()
 
         ###############################################################
         ##
@@ -308,7 +312,7 @@ while True:
         ##  Busy wait for the loop to complete
         ###############################################################
     
-        while(time.clock() - tLoopStart <  loopTimeSec):
+        while(time.time() - tLoopStart <  loopTimeSec):
             time.sleep(0.0001) 
         
     ########################################################################
@@ -318,7 +322,7 @@ while True:
     ######################################################################## 
     
     # Loop end time, for stats
-    tProgramEnd = time.clock()  
+    tProgramEnd = time.time()
     
     # Turn off the motors    
     FastWrite(motorDutyCycleLeft ,0)
@@ -326,7 +330,7 @@ while True:
 
     # Wait for the Touch Sensor to be released
     while touchSensor.is_pressed:
-        time.sleep(0.01)    
+        time.sleep(0.01)
 
     # Calculate loop time
     tLoop = (tProgramEnd - tProgramStart)/loopCount
@@ -335,4 +339,4 @@ while True:
     # Print a stop message
     eprint("-----------------------------------")   
     eprint("STOP")
-    eprint("-----------------------------------")     
+    eprint("-----------------------------------")
